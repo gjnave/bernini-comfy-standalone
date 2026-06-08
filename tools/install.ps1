@@ -16,12 +16,12 @@ $ComfyCommit = "ba9ffa0a2b70250a2945e7cdca5d72febc53df51"
 $KJCommit = "a8fd39cbe6e03249463131f0a407d89729c266e4"
 $VHSCommit = "4ee72c065db22c9d96c2427954dc69e7b908444b"
 
-function Run($File, [string[]] $Args, [string] $WorkingDirectory = $Root) {
+function Run($File, [string[]] $CommandArgs, [string] $WorkingDirectory = $Root) {
     Write-Host ""
-    Write-Host "> $File $($Args -join ' ')"
-    $p = Start-Process -FilePath $File -ArgumentList $Args -WorkingDirectory $WorkingDirectory -Wait -NoNewWindow -PassThru
+    Write-Host "> $File $($CommandArgs -join ' ')"
+    $p = Start-Process -FilePath $File -ArgumentList $CommandArgs -WorkingDirectory $WorkingDirectory -Wait -NoNewWindow -PassThru
     if ($p.ExitCode -ne 0) {
-        throw "Command failed with exit code $($p.ExitCode): $File $($Args -join ' ')"
+        throw "Command failed with exit code $($p.ExitCode): $File $($CommandArgs -join ' ')"
     }
 }
 
