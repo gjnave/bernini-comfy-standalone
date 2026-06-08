@@ -8,6 +8,7 @@ $Root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 $Comfy = Join-Path $Root "ComfyUI"
 $Logs = Join-Path $Root "logs"
 New-Item -ItemType Directory -Force -Path $Logs | Out-Null
+New-Item -ItemType Directory -Force -Path (Join-Path $Root "input"), (Join-Path $Root "output"), (Join-Path $Comfy "user") | Out-Null
 
 $Stamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $LogFile = Join-Path $Logs "run-$Stamp.log"
