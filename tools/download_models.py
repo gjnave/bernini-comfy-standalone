@@ -24,8 +24,8 @@ MODELS = [
         "dest": "models/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors",
     },
     {
-        "repo_id": "Comfy-Org/Wan_2.1_ComfyUI_repackaged",
-        "filename": "split_files/vae/Wan2_1_VAE_bf16.safetensors",
+        "repo_id": "Kijai/WanVideo_comfy",
+        "filename": "Wan2_1_VAE_bf16.safetensors",
         "dest": "models/vae/Wan2_1_VAE_bf16.safetensors",
     },
     {
