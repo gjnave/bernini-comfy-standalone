@@ -1,0 +1,17 @@
+# Generated runtime
+ComfyUI/
+models/
+output/
+logs/
+
+# Local caches
+__pycache__/
+*.pyc
+.venv/
+venv/
+venv-cu130/
+.cache/
+input/momgen_20260530_190052_303172217.png
+
+# Release artifacts are generated locally.
+dist/

@@ -1,0 +1,4 @@
+# No additional Python packages are required.
+#
+# This node pack uses the ComfyUI runtime and should not install or replace:
+# torch, torchvision, torchaudio, CUDA, or NVIDIA packages.

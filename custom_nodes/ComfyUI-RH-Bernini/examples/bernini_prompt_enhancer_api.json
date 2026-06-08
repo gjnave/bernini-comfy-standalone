@@ -1,0 +1,27 @@
+{
+  "1": {
+    "class_type": "BerniniPromptEnhancer",
+    "inputs": {
+      "prompt": "用参考图替换视频中的人物",
+      "task_type": "rv2v",
+      "video_frames": 3
+    },
+    "_meta": {
+      "title": "Bernini Prompt Enhancer"
+    }
+  },
+  "2": {
+    "class_type": "BerniniPromptResultParser",
+    "inputs": {
+      "api_response": "{\"rewritten_text\":\"Replace the person in the source video with the person from the reference image, preserving camera framing, motion, lighting, background, shadows, and all other unchanged elements.\"}",
+      "original_prompt": "用参考图替换视频中的人物",
+      "json_mode": [
+        "1",
+        4
+      ]
+    },
+    "_meta": {
+      "title": "Bernini Prompt Result Parser"
+    }
+  }
+}
