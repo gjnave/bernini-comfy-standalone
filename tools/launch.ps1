@@ -7,8 +7,20 @@ $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 $Comfy = Join-Path $Root "ComfyUI"
 $Logs = Join-Path $Root "logs"
+$WorkflowSource = Join-Path $Root "workflows\Bernini_testing_video_edit_02.json"
+$PersistentWorkflowDir = Join-Path $Comfy "user\default\workflows"
 New-Item -ItemType Directory -Force -Path $Logs | Out-Null
 New-Item -ItemType Directory -Force -Path (Join-Path $Root "input"), (Join-Path $Root "output"), (Join-Path $Comfy "user") | Out-Null
+
+function Sync-PersistentWorkflow() {
+    if (-not (Test-Path $WorkflowSource)) {
+        throw "Missing workflow source file: $WorkflowSource"
+    }
+    New-Item -ItemType Directory -Force -Path $PersistentWorkflowDir | Out-Null
+    Copy-Item -Path $WorkflowSource -Destination (Join-Path $PersistentWorkflowDir (Split-Path -Leaf $WorkflowSource)) -Force
+}
+
+Sync-PersistentWorkflow
 
 $Stamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $LogFile = Join-Path $Logs "run-$Stamp.log"
@@ -37,6 +49,7 @@ Write-Host "Bernini ComfyUI standalone"
 Write-Host "Root: $Root"
 Write-Host "Log:  $LogFile"
 Write-Host "URL:  http://127.0.0.1:8188 unless overridden with --port"
+Write-Host "Workflow: $PersistentWorkflowDir"
 Write-Host ""
 
 Set-Location $Comfy

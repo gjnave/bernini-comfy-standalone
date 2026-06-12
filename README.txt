@@ -41,6 +41,18 @@ Workflow:
 
   workflows\Bernini_testing_video_edit_02.json
 
+Persistent workflow copy:
+
+  ComfyUI\user\default\workflows\Bernini_testing_video_edit_02.json
+
+The installer and launcher sync the repo workflow into ComfyUI's user workflow folder so the standalone keeps a persistent copy of the Bernini graph.
+
+The active GUI for this standalone is ComfyUI on:
+
+  http://127.0.0.1:8188
+
+The Bernini custom node pack also exposes the workflow as a ComfyUI workflow template and now auto-loads that Bernini workflow on startup when the canvas is blank.
+
 Original source workflow:
 
   D:\comfyUI\Bernini_testing_video_edit_02.json

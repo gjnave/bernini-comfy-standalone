@@ -11,6 +11,8 @@ $Venv = Join-Path $Comfy "venv-cu130"
 $Python = Join-Path $Venv "Scripts\python.exe"
 $RepoCustomNodes = Join-Path $Root "custom_nodes"
 $ComfyCustomNodes = Join-Path $Comfy "custom_nodes"
+$WorkflowSource = Join-Path $Root "workflows\Bernini_testing_video_edit_02.json"
+$PersistentWorkflowDir = Join-Path $Comfy "user\default\workflows"
 
 $ComfyCommit = "ba9ffa0a2b70250a2945e7cdca5d72febc53df51"
 $KJCommit = "a8fd39cbe6e03249463131f0a407d89729c266e4"
@@ -31,6 +33,14 @@ function Copy-Directory($Source, $Destination) {
     if ($LASTEXITCODE -gt 7) {
         throw "robocopy failed with exit code $LASTEXITCODE"
     }
+}
+
+function Sync-PersistentWorkflow() {
+    if (-not (Test-Path $WorkflowSource)) {
+        throw "Missing workflow source file: $WorkflowSource"
+    }
+    New-Item -ItemType Directory -Force -Path $PersistentWorkflowDir | Out-Null
+    Copy-Item -Path $WorkflowSource -Destination (Join-Path $PersistentWorkflowDir (Split-Path -Leaf $WorkflowSource)) -Force
 }
 
 Write-Host "Bernini ComfyUI standalone install"
@@ -87,6 +97,7 @@ bernini:
 "@ | Set-Content -Path (Join-Path $Comfy "extra_model_paths.yaml") -Encoding UTF8
 
 New-Item -ItemType Directory -Force -Path (Join-Path $Root "models\unet"), (Join-Path $Root "models\text_encoders"), (Join-Path $Root "models\loras"), (Join-Path $Root "models\vae"), (Join-Path $Root "output"), (Join-Path $Root "logs") | Out-Null
+Sync-PersistentWorkflow
 
 if (-not $SkipModels) {
     $env:HF_HUB_ENABLE_HF_TRANSFER = "1"
@@ -103,4 +114,5 @@ Run $Python @("-m", "pip", "check")
 
 Write-Host ""
 Write-Host "Install complete."
+Write-Host "Persistent workflow: $PersistentWorkflowDir"
 Write-Host "Launch with: run.bat"
