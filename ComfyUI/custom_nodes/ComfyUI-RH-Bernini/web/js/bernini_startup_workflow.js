@@ -1,10 +1,17 @@
 import { app } from "../../../../scripts/app.js";
 
 const WORKFLOW_URL = "/api/workflow_templates/ComfyUI-RH-Bernini/bernini_ui_workflow.json";
-const SESSION_KEY = "berniniStartupWorkflowAttempted:v2";
 const BAD_NODE_TYPES = new Set([
     "easy imageScaleDownToSize",
 ]);
+const BAD_WORKFLOW_MARKERS = [
+    "comfyui-easy-use",
+    "easy imageScaleDownToSize",
+    "wan2.2_t2v_lightx2v_4steps_lora_v1.1_low_noise.safetensors",
+    "wan_2.1_vae_Comfy-Org.safetensors",
+];
+
+let startupWorkflowLoaded = false;
 
 function graphLooksEmpty() {
     const nodes = app?.graph?._nodes;
@@ -19,11 +26,20 @@ function graphNeedsReplacement() {
     if (!Array.isArray(nodes) || nodes.length === 0) {
         return true;
     }
-    return nodes.some((node) => !node?.type || BAD_NODE_TYPES.has(node.type));
+    if (nodes.some((node) => node?.id === 76 || !node?.type || BAD_NODE_TYPES.has(node.type))) {
+        return true;
+    }
+
+    try {
+        const serialized = JSON.stringify(app.graph.serialize?.() ?? {});
+        return BAD_WORKFLOW_MARKERS.some((marker) => serialized.includes(marker));
+    } catch {
+        return false;
+    }
 }
 
 async function tryLoadBerniniWorkflow() {
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
+    if (startupWorkflowLoaded || !graphNeedsReplacement()) {
         return;
     }
 
@@ -37,7 +53,6 @@ async function tryLoadBerniniWorkflow() {
         }
 
         if (!graphNeedsReplacement()) {
-            sessionStorage.setItem(SESSION_KEY, "1");
             return;
         }
 
@@ -49,7 +64,7 @@ async function tryLoadBerniniWorkflow() {
             }
             const workflow = await response.json();
             await app.loadGraphData(workflow);
-            sessionStorage.setItem(SESSION_KEY, "1");
+            startupWorkflowLoaded = true;
             console.info("[Bernini] Loaded startup workflow.");
         } catch (error) {
             console.warn("[Bernini] Failed to load startup workflow:", error);
@@ -61,8 +76,8 @@ async function tryLoadBerniniWorkflow() {
 app.registerExtension({
     name: "ComfyUI.RHBernini.StartupWorkflow",
     async setup() {
-        queueMicrotask(() => {
-            void tryLoadBerniniWorkflow();
-        });
+        for (const delay of [750, 2000, 5000]) {
+            setTimeout(() => void tryLoadBerniniWorkflow(), delay);
+        }
     },
 });

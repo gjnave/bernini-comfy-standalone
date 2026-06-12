@@ -19,6 +19,19 @@ def _resize_long_edge(image, max_size, stride=16):
     return comfy.utils.common_upscale(image[:, :, :, :3].movedim(-1, 1), nw, nh, "area", "disabled").movedim(1, -1)
 
 
+def _scale_down_to_size(images, size, mode):
+    h, w = images.shape[1], images.shape[2]
+    size = max(int(size), 1)
+    source_edge = max(h, w) if mode else min(h, w)
+    if source_edge <= size:
+        return images[:, :, :, :3]
+
+    scale = size / source_edge
+    height = max(1, round(h * scale))
+    width = max(1, round(w * scale))
+    return comfy.utils.common_upscale(images[:, :, :, :3].movedim(-1, 1), width, height, "area", "disabled").movedim(1, -1)
+
+
 def _iter_reference_images(reference_images):
     if reference_images is None:
         return
@@ -82,6 +95,28 @@ def _build_chat_prompts(system_prompt, api_prompt, original_prompt):
         return cleaned, match.group("user").strip()
 
     return api_prompt, original_prompt
+
+
+class EasyImageScaleDownToSizeCompat(io.ComfyNode):
+    """Compatibility shim for old Bernini workflows saved with ComfyUI-Easy-Use."""
+
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="easy imageScaleDownToSize",
+            display_name="Image Scale Down To Size",
+            category="EasyUse/Image",
+            inputs=[
+                io.Image.Input("images"),
+                io.Int.Input("size", default=512, min=1, max=8192, step=1),
+                io.Boolean.Input("mode", default=True),
+            ],
+            outputs=[io.Image.Output(display_name="IMAGE")],
+        )
+
+    @classmethod
+    def execute(cls, images, size=512, mode=True) -> io.NodeOutput:
+        return io.NodeOutput(_scale_down_to_size(images, size, mode))
 
 
 class BerniniConditioning(io.ComfyNode):
@@ -417,6 +452,7 @@ class BerniniExtension(ComfyExtension):
     @override
     async def get_node_list(self) -> list[type[io.ComfyNode]]:
         return [
+            EasyImageScaleDownToSizeCompat,
             BerniniConditioning,
             BerniniPromptEnhancer,
             BerniniPromptResultParser,

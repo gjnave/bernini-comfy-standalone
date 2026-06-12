@@ -35,6 +35,44 @@ MODELS = [
     },
 ]
 
+MODEL_ALIASES = [
+    {
+        "source": "models/vae/Wan2_1_VAE_bf16.safetensors",
+        "dest": "models/vae/wan_2.1_vae_Comfy-Org.safetensors",
+    },
+    {
+        "source": "models/loras/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors",
+        "dest": "models/loras/wan2.2_t2v_lightx2v_4steps_lora_v1.1_high_noise.safetensors",
+    },
+    {
+        "source": "models/loras/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors",
+        "dest": "models/loras/wan2.2_t2v_lightx2v_4steps_lora_v1.1_low_noise.safetensors",
+    },
+]
+
+
+def ensure_model_aliases(root: Path, force: bool = False) -> None:
+    for alias in MODEL_ALIASES:
+        source = root / alias["source"]
+        dest = root / alias["dest"]
+        if not source.exists() or source.stat().st_size == 0:
+            print(f"WARNING missing alias source: {source.relative_to(root)}")
+            continue
+
+        if dest.exists():
+            if dest.stat().st_size > 0 and not force:
+                print(f"OK alias exists: {dest.relative_to(root)}")
+                continue
+            dest.unlink()
+
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            dest.hardlink_to(source)
+            print(f"Linked alias {dest.relative_to(root)} -> {source.relative_to(root)}")
+        except OSError:
+            shutil.copy2(source, dest)
+            print(f"Copied alias {dest.relative_to(root)} -> {source.relative_to(root)}")
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Download Bernini model files for the standalone bundle.")
@@ -64,6 +102,7 @@ def main() -> int:
         shutil.copy2(downloaded, dest)
         print(f"Wrote {dest.relative_to(root)} ({dest.stat().st_size / (1024 ** 3):.2f} GB)")
 
+    ensure_model_aliases(root, force=args.force)
     return 0
 
 
